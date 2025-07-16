@@ -4,7 +4,12 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const UserPage = () => {
+
   const [tasks, setTasks] = useState([]);
+
+  const [statusFilter, setStatusFilter] = useState("all"); // all | completed | incomplete
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [loggedInUser, setLoggedInUser] = useState(""); // ✅ Store logged-in user
   const [newTask, setNewTask] = useState({
     title: "",
@@ -30,11 +35,11 @@ const UserPage = () => {
     if (!newTask.title.trim() || !newTask.description.trim()) return;
 
     const taskId = Date.now().toString();
-    
+
     // ✅ Assign task to logged-in user
-    const newTaskItem = { 
-      id: taskId, 
-      ...newTask, 
+    const newTaskItem = {
+      id: taskId,
+      ...newTask,
       assignedTo: loggedInUser // ✅ Store assigned user
     };
 
@@ -73,13 +78,25 @@ const UserPage = () => {
     return "text-green-600 font-bold"; // Low priority
   };
 
+  const filteredTasks = tasks.filter((task) => {
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "completed" && task.progress === 100) ||
+      (statusFilter === "incomplete" && task.progress < 100);
+
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <UserSidebar />
 
       <div className="flex-1 p-6">
         <h1 className="text-4xl font-bold mb-6 text-center w-full">
-          <span>🎯</span> 
+          <span>🎯</span>
           <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
             User Task Management
           </span>
@@ -149,12 +166,34 @@ const UserPage = () => {
           </form>
         </div>
 
+
+        {/* Filter Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-md px-4 py-2"
+          >
+            <option value="all">All Tasks</option>
+            <option value="completed">✅ Completed</option>
+            <option value="incomplete">🕒 Incomplete</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded-md px-4 py-2 w-full md:w-1/3"
+          />
+        </div>
+
         {/* Task List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tasks.length === 0 ? (
+          {filteredTasks.length === 0 ? (
             <p className="text-gray-600">No tasks created yet. Start by adding a task!</p>
           ) : (
-            tasks.map((task) => (
+            filteredTasks.map((task) => (
               <div key={task.id} className="bg-white shadow-md p-4 rounded-md border-l-4 border-blue-400">
                 <h3 className="text-lg font-semibold">{task.title}</h3>
                 <p className="text-gray-600">{task.description}</p>
