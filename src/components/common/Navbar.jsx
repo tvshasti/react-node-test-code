@@ -5,10 +5,10 @@ import { FaUserCircle, FaTasks } from "react-icons/fa";
 import TaskList from "../tasks/TaskList";
 
 const Navbar = () => {
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const hideProfileRoutes = ["/", "/login", "/signup"];
+  // const hideProfileRoutes = ["/", "/login", "/signup"];
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [taskListOpen, setTaskListOpen] = useState(false);
@@ -22,7 +22,7 @@ const Navbar = () => {
 
     // Load correct profile from localStorage
     const storedProfile = JSON.parse(localStorage.getItem(isAdminPortal ? "adminProfile" : "userProfile"));
-    
+
     if (storedProfile) {
       setProfile({
         name: storedProfile.name || "User",
@@ -42,7 +42,7 @@ const Navbar = () => {
         setTaskListOpen(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -99,7 +99,7 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4">
         {/* Task List Button (Hidden on Landing/Login/Signup) */}
-        {!hideProfileRoutes.includes(location.pathname) && (
+        {isAuthenticated && (
           <div className="relative" ref={taskListRef}>
             <button
               onClick={() => setTaskListOpen(!taskListOpen)}
@@ -120,7 +120,7 @@ const Navbar = () => {
         )}
 
         {/* Profile Button (Hidden on Landing/Login/Signup) */}
-        {!hideProfileRoutes.includes(location.pathname) && (
+        {isAuthenticated && (
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
